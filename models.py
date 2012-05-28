@@ -85,7 +85,9 @@ class iPhone(models.Model):
 
         alert_payload = alert
         if action_loc_key or loc_key or loc_args:
-            alert_payload = {'body' : alert}
+            alert_payload = {}
+            if alert != None:
+                alert_payload['body'] = alert
             if action_loc_key:
                 alert_payload['action-loc-key'] = action_loc_key
             if loc_key:

@@ -133,10 +133,10 @@ class iPhone(models.Model):
 
     def __unicode__(self):
         return u"iPhone %s" % self.udid
-        
+
 def sendMessageToPhoneGroup(phone_list, alert, badge=0, sound="chime", 
                             custom_params={}, action_loc_key=None, loc_key=None,
-                            loc_args=[], sandbox=False):
+                            loc_args=[], sandbox=False, version="free"):
     """
     See the syntax for send_message, the only difference is this opens
     one socket to send them all.
@@ -149,10 +149,10 @@ def sendMessageToPhoneGroup(phone_list, alert, badge=0, sound="chime",
     
     if sandbox:
         host_name = settings.IPHONE_SANDBOX_APN_HOST
-        cert_path = settings.IPHONE_SANDBOX_APN_PUSH_CERT
+        cert_path = getattr(settings, 'IPHONE_SANDBOX_APN_PUSH_CERT_' + version.upper())
     else:
         host_name = settings.IPHONE_LIVE_APN_HOST
-        cert_path = settings.IPHONE_LIVE_APN_PUSH_CERT
+        cert_path = getattr(settings, 'IPHONE_LIVE_APN_PUSH_CERT_' + version.upper())
     
     s = socket()
     c = ssl.wrap_socket(s,
@@ -161,7 +161,7 @@ def sendMessageToPhoneGroup(phone_list, alert, badge=0, sound="chime",
     c.connect((host_name, 2195))
     
     for phone in phone_list:
-        if phone.test_phone == sandbox:
+        if phone.test_phone == sandbox and phone.notes == version:
             phone.send_message(alert, badge, sound, custom_params,
                             action_loc_key, loc_key, loc_args, c)
     
